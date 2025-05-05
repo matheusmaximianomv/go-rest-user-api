@@ -1,0 +1,59 @@
+### GET
+
+### Buscar usuários
+GET http://localhost:8080/api/users
+Accept: application/json
+
+### Listar usuário por id
+GET http://localhost:8080/api/users/6110aa4d-020c-4f37-99ce-6a9992cdee07
+Accept: application/json
+
+### Listar nenhum usuário
+GET http://localhost:8080/api/users/6110aa4d-020c-4f37-99ce-6a9992cdee08
+Accept: application/json
+
+### Erro ao listar um usuário específico
+GET http://localhost:8080/api/users/6110aa4d-020c-4f37-99ce-
+Accept: application/json
+
+### POST
+
+### Salvar usuário
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "first_name": "Administrator",
+  "last_name": "Administrator",
+  "biography": "Usuário com permissões completas para gerenciar o sistema, incluindo criação, edição e exclusão de recursos, além de gerenciar outros usuários e configurações."
+}
+
+### Salvar usuário (Campos com a quantidade abaixo da mínima permitida)
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "first_name": "A",
+  "last_name": "A",
+  "biography": "Usuário com permiss"
+}
+
+### Salvar usuário (Campos com a quantidade superior da máxima permitida)
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "first_name": "Administrador Regional",
+  "last_name": "Administrador Regional",
+  "biography": "Um usuário administrador em um sistema é um perfil com privilégios elevados que vão além das permissões de um usuário comum. Ele possui acesso total para gerenciar configurações globais, criar, editar ou excluir contas de outros usuários, definir e modificar permissões de acesso, visualizar relatórios e registros sensíveis (logs), e realizar ações críticas como backups, restauração de dados e atualizações do sistema. Além disso, o administrador pode configurar integrações com sistemas externos, controlar fluxos de trabalho, e aprovar ou rejeitar solicitações que impactam o funcionamento geral da plataforma. Frequentemente, ele também tem acesso irrestrito a todos os módulos, inclusive aqueles restritos a operações sensíveis, como finanças, segurança e infraestrutura. Suas ações são monitoradas e auditáveis, garantindo que haja controle e rastreabilidade sobre as alterações realizadas no ambiente. Esse papel exige responsabilidade, pois qualquer mudança efetuada pode afetar o funcionamento e a segurança de todo o sistema."
+}
+
+### Salvar usuário (Campos com a quantidade no limite permitida)
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "first_name": "Administrador Geral.",
+  "last_name": "Administrador Geral.",
+  "biography": "O usuário administrador possui permissões avançadas que superam as de um usuário comum. Ele pode criar, editar e excluir contas, definir permissões, acessar todos os módulos, inclusive os sensíveis, e visualizar logs e relatórios restritos. Também pode configurar integrações, realizar backups, restaurar dados e aprovar ações críticas. Suas atividades são auditáveis, garantindo controle e segurança sobre o funcionamento do sistema e de outros mod"
+}
