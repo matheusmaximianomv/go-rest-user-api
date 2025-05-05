@@ -2,19 +2,12 @@ package database
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 
 	"github.com/google/uuid"
 )
-
-type User struct {
-	ID        ID     `json:"id,omitempty"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Biography string `json:"biography"`
-}
 
 type Storage struct {
 	Users map[string]User `json:"users"`
@@ -24,10 +17,9 @@ type Database struct {
 	Data Storage
 }
 
-func (a *Database) StartStorage() error {
+func (a *Database) startStorage() error {
 	db, err := a.getDataFromFile()
 	if db == nil || err != nil {
-		slog.Error("Não foi possível ler o banco", slog.Any("error", err))
 		return fmt.Errorf("não foi possível ler o banco: %w", err)
 	}
 
@@ -74,7 +66,7 @@ func (a *Database) getFile() (*os.File, error) {
 		return nil, err
 	}
 
-	file, err := os.Open(cwd + "/database/storage.json")
+	file, err := os.OpenFile(cwd+"/database/storage.json", os.O_RDWR, 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -101,38 +93,51 @@ func (a *Database) FindById(id ID) *User {
 	return &user
 }
 
-func (a *Database) StoreUser(user User) ID {
+func (a *Database) StoreUser(user User) (*ID, error) {
 	id := ID(uuid.New())
 	user.ID = id
 
 	a.Data.Users[id.ToString()] = user
-	a.updateFile()
 
-	return id
-}
-
-func (a *Database) UpdateUser(id ID, user User) {
-	userExist := a.FindById(id)
-
-	if userExist == nil {
-		return
-	}
-
-	a.Data.Users[id.ToString()] = user
-	a.updateFile()
-}
-
-func (a *Database) DeleteUser(id ID) {
-	delete(a.Data.Users, id.ToString())
-	a.updateFile()
-}
-
-func InitDatabase() (*Database, error) {
-	application := &Database{}
-
-	if err := application.StartStorage(); err != nil {
+	if err := a.updateFile(); err != nil {
 		return nil, err
 	}
 
-	return application, nil
+	return &id, nil
+}
+
+func (a *Database) UpdateUser(id ID, user User) error {
+	userExist := a.FindById(id)
+
+	if userExist == nil {
+		return errors.New("usuário não encontrado")
+	}
+
+	a.Data.Users[id.ToString()] = user
+
+	if err := a.updateFile(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *Database) DeleteUser(id ID) error {
+	delete(a.Data.Users, id.ToString())
+
+	if err := a.updateFile(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func InitDatabase() (Database, error) {
+	db := Database{}
+
+	if err := db.startStorage(); err != nil {
+		return db, err
+	}
+
+	return db, nil
 }

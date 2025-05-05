@@ -19,8 +19,8 @@ func main() {
 }
 
 func Init() error {
-	database, err := database.InitDatabase()
-	if err != nil || database == nil {
+	db, err := database.InitDatabase()
+	if err != nil {
 		return err
 	}
 
@@ -29,7 +29,7 @@ func Init() error {
 		ReadTimeout:  10 * time.Second,
 		IdleTimeout:  time.Minute,
 		WriteTimeout: 10 * time.Second,
-		Handler:      api.NewHander(*database),
+		Handler:      api.NewHander(db),
 	}
 
 	if err := server.ListenAndServe(); err != nil {
