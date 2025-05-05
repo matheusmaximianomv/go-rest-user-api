@@ -12,21 +12,21 @@ func (i ID) ToString() string {
 	return uuid.UUID(i).String()
 }
 
-// Implementando o método MarshalJSON para serialização customizada
 func (id ID) MarshalJSON() ([]byte, error) {
-	return json.Marshal(uuid.UUID(id).String()) // Converte o UUID para string
+	return json.Marshal(uuid.UUID(id).String())
 }
 
-// Implementando o método UnmarshalJSON para deserialização customizada
 func (id *ID) UnmarshalJSON(data []byte) error {
 	var str string
 	if err := json.Unmarshal(data, &str); err != nil {
 		return err
 	}
+
 	parsedUUID, err := uuid.Parse(str)
 	if err != nil {
 		return err
 	}
-	*id = ID(parsedUUID) // Atribui o UUID ao tipo ID
+
+	*id = ID(parsedUUID)
 	return nil
 }
