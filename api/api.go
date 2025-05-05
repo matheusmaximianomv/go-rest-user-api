@@ -67,14 +67,15 @@ func handleGetUser(db database.Database) http.HandlerFunc {
 
 func handlePostUser(db database.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var body database.User
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		var newUser database.User
+		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
 			utils.SendJSON(w, utils.Response{Error: "Não foi possível converter dados"}, http.StatusBadRequest)
 			slog.Error("Não foi possível converter dados", "erro", err)
 			return
 		}
+		defer r.Body.Close()
 
-		invalidFields := body.HasAnyFieldInvalid()
+		invalidFields := newUser.HasAnyFieldInvalid()
 		invalidFieldsLen := len(invalidFields)
 
 		if invalidFieldsLen != 0 && (invalidFieldsLen > 1 || invalidFields[0] != database.UserFieldID) {
@@ -83,7 +84,7 @@ func handlePostUser(db database.Database) http.HandlerFunc {
 			return
 		}
 
-		idUser, err := db.StoreUser(body)
+		idUser, err := db.StoreUser(newUser)
 		if idUser == nil {
 			utils.SendJSON(w, utils.Response{Error: "ID não identificado"}, http.StatusInternalServerError)
 			slog.Error("Usuário não criado")
@@ -96,8 +97,8 @@ func handlePostUser(db database.Database) http.HandlerFunc {
 			return
 		}
 
-		body.ID = *idUser
-		utils.SendJSON(w, utils.Response{Data: body}, http.StatusCreated)
+		newUser.ID = *idUser
+		utils.SendJSON(w, utils.Response{Data: newUser}, http.StatusCreated)
 	}
 }
 

@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -110,7 +109,7 @@ func (a *Database) UpdateUser(id ID, user User) error {
 	userExist := a.FindById(id)
 
 	if userExist == nil {
-		return errors.New("usuário não encontrado")
+		return nil
 	}
 
 	a.Data.Users[id.ToString()] = user
