@@ -57,3 +57,22 @@ Content-Type: application/json
   "last_name": "Administrador Geral.",
   "biography": "O usuário administrador possui permissões avançadas que superam as de um usuário comum. Ele pode criar, editar e excluir contas, definir permissões, acessar todos os módulos, inclusive os sensíveis, e visualizar logs e relatórios restritos. Também pode configurar integrações, realizar backups, restaurar dados e aprovar ações críticas. Suas atividades são auditáveis, garantindo controle e segurança sobre o funcionamento do sistema e de outros mod"
 }
+
+### PUT
+
+## Atualizar usuário (Campos com a quantidade no limite permitida)
+PUT http://localhost:8080/api/users/fe24c90e-d88d-4c1b-bc8d-53826eb9b050
+Content-Type: application/json
+
+{
+  "first_name": "Matheus Max.",
+  "last_name": "Matheus Max.",
+  "biography": "O usuário administrador possui permissões avançadas que superam as de um usuário comum. Ele pode criar, editar e excluir contas, definir permissões, acessar todos os módulos, inclusive os sensíveis, e visualizar logs e relatórios restritos. Também pode configurar integrações, realizar backups, restaurar dados e aprovar ações críticas. Suas atividades são auditáveis, garantindo controle e segurança sobre o funcionamento do sistema e de outros mod"
+}
+
+### PUT
+
+### Remover usuário
+
+DELETE http://localhost:8080/api/users/6110aa4d-020c-4f37-99ce-6a9992cdee07
+Content-Type: application/json

@@ -1,9 +1,5 @@
 package database
 
-import (
-	"github.com/google/uuid"
-)
-
 const (
 	UserFieldID        = "id"
 	UserFieldFirstName = "first_name"
@@ -26,10 +22,6 @@ type User struct {
 }
 
 func (u *User) HasAnyFieldInvalid() (fields []string) {
-	if !u.isValidUUID(u.ID) {
-		fields = append(fields, UserFieldID)
-	}
-
 	if !u.isLenBetween(u.FirstName, firstNameMin, firstNameMax) {
 		fields = append(fields, UserFieldFirstName)
 	}
@@ -43,15 +35,6 @@ func (u *User) HasAnyFieldInvalid() (fields []string) {
 	}
 
 	return
-}
-
-func (u *User) isValidUUID(id ID) bool {
-	if id == ID(uuid.Nil) {
-		return false
-	}
-
-	_, err := uuid.Parse(id.ToString())
-	return err == nil
 }
 
 func (u *User) isLenBetween(s string, min, max int) bool {

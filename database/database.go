@@ -49,10 +49,13 @@ func (a *Database) updateFile() error {
 	}
 	defer file.Close()
 
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
+	data, err := json.MarshalIndent(a.Data, "", "  ")
+	if err != nil {
+		return err
+	}
 
-	if err := encoder.Encode(a.Data); err != nil {
+	err = os.WriteFile(file.Name(), data, 0644)
+	if err != nil {
 		return err
 	}
 
@@ -74,7 +77,7 @@ func (a *Database) getFile() (*os.File, error) {
 }
 
 func (a *Database) FindAll() []User {
-	var users []User
+	users := make([]User, 0)
 
 	for _, user := range a.Data.Users {
 		users = append(users, user)
@@ -92,7 +95,7 @@ func (a *Database) FindById(id ID) *User {
 	return &user
 }
 
-func (a *Database) StoreUser(user User) (*ID, error) {
+func (a *Database) Insert(user User) (*ID, error) {
 	id := ID(uuid.New())
 	user.ID = id
 
@@ -112,6 +115,7 @@ func (a *Database) UpdateUser(id ID, user User) error {
 		return nil
 	}
 
+	user.ID = id
 	a.Data.Users[id.ToString()] = user
 
 	if err := a.updateFile(); err != nil {
