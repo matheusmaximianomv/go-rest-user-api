@@ -7,6 +7,6 @@ type Database interface {
 	FindAll() []entities.User
 	FindById(id entities.ID) *entities.User
 	Insert(user entities.User) (*entities.ID, error)
-	UpdateUser(id entities.ID, user entities.User) error
-	DeleteUser(id entities.ID) error
+	Update(id entities.ID, user entities.User) error
+	Delete(id entities.ID) error
 }

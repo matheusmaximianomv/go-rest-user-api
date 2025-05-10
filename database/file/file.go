@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-rest-user-api/entities"
 	"os"
+	"sync"
 
 	"github.com/google/uuid"
 )
@@ -14,22 +15,23 @@ type Storage struct {
 }
 
 type DatabaseFile struct {
-	Data Storage
+	Data  Storage
+	Mutex sync.Mutex
 }
 
-func (a *DatabaseFile) StartStorage() error {
-	db, err := a.getDataFromFile()
+func (df *DatabaseFile) StartStorage() error {
+	db, err := df.getDataFromFile()
 	if db == nil || err != nil {
 		return fmt.Errorf("unable to connect to database: %w", err)
 	}
 
-	a.Data = *db
+	df.Data = *db
 
 	return nil
 }
 
-func (a *DatabaseFile) getDataFromFile() (*Storage, error) {
-	file, err := a.getFile()
+func (df *DatabaseFile) getDataFromFile() (*Storage, error) {
+	file, err := df.getFile()
 	if err != nil {
 		return nil, err
 	}
@@ -43,14 +45,14 @@ func (a *DatabaseFile) getDataFromFile() (*Storage, error) {
 	return db, nil
 }
 
-func (a *DatabaseFile) updateFile() error {
-	file, err := a.getFile()
+func (df *DatabaseFile) updateFile() error {
+	file, err := df.getFile()
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	data, err := json.MarshalIndent(a.Data, "", "  ")
+	data, err := json.MarshalIndent(df.Data, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -63,7 +65,7 @@ func (a *DatabaseFile) updateFile() error {
 	return nil
 }
 
-func (a *DatabaseFile) getFile() (*os.File, error) {
+func (df *DatabaseFile) getFile() (*os.File, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -77,18 +79,18 @@ func (a *DatabaseFile) getFile() (*os.File, error) {
 	return file, nil
 }
 
-func (a *DatabaseFile) FindAll() []entities.User {
+func (df *DatabaseFile) FindAll() []entities.User {
 	users := make([]entities.User, 0)
 
-	for _, user := range a.Data.Users {
+	for _, user := range df.Data.Users {
 		users = append(users, user)
 	}
 
 	return users
 }
 
-func (a *DatabaseFile) FindById(id entities.ID) *entities.User {
-	user, ok := a.Data.Users[id.ToString()]
+func (df *DatabaseFile) FindById(id entities.ID) *entities.User {
+	user, ok := df.Data.Users[id.ToString()]
 	if !ok {
 		return nil
 	}
@@ -96,40 +98,49 @@ func (a *DatabaseFile) FindById(id entities.ID) *entities.User {
 	return &user
 }
 
-func (a *DatabaseFile) Insert(user entities.User) (*entities.ID, error) {
+func (df *DatabaseFile) Insert(user entities.User) (*entities.ID, error) {
 	id := entities.ID(uuid.New())
 	user.ID = id
 
-	a.Data.Users[id.ToString()] = user
+	df.Mutex.Lock()
+	defer df.Mutex.Unlock()
 
-	if err := a.updateFile(); err != nil {
+	df.Data.Users[id.ToString()] = user
+
+	if err := df.updateFile(); err != nil {
 		return nil, err
 	}
 
 	return &id, nil
 }
 
-func (a *DatabaseFile) UpdateUser(id entities.ID, user entities.User) error {
-	userExist := a.FindById(id)
+func (df *DatabaseFile) Update(id entities.ID, user entities.User) error {
+	userExist := df.FindById(id)
 
 	if userExist == nil {
 		return nil
 	}
 
-	user.ID = id
-	a.Data.Users[id.ToString()] = user
+	df.Mutex.Lock()
+	defer df.Mutex.Unlock()
 
-	if err := a.updateFile(); err != nil {
+	user.ID = id
+	df.Data.Users[id.ToString()] = user
+
+	if err := df.updateFile(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (a *DatabaseFile) DeleteUser(id entities.ID) error {
-	delete(a.Data.Users, id.ToString())
+func (df *DatabaseFile) Delete(id entities.ID) error {
+	df.Mutex.Lock()
+	defer df.Mutex.Unlock()
 
-	if err := a.updateFile(); err != nil {
+	delete(df.Data.Users, id.ToString())
+
+	if err := df.updateFile(); err != nil {
 		return err
 	}
 

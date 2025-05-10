@@ -2,12 +2,14 @@ package database_memory
 
 import (
 	"go-rest-user-api/entities"
+	"sync"
 
 	"github.com/google/uuid"
 )
 
 type DatabaseMemory struct {
-	Data map[string]entities.User
+	Data  map[string]entities.User
+	Mutex sync.Mutex
 }
 
 func (dm *DatabaseMemory) StartStorage() error {
@@ -38,12 +40,15 @@ func (dm *DatabaseMemory) Insert(user entities.User) (*entities.ID, error) {
 	id := entities.ID(uuid.New())
 	user.ID = id
 
+	dm.Mutex.Lock()
+	defer dm.Mutex.Unlock()
+
 	dm.Data[id.ToString()] = user
 
 	return &id, nil
 }
 
-func (dm *DatabaseMemory) UpdateUser(id entities.ID, user entities.User) error {
+func (dm *DatabaseMemory) Update(id entities.ID, user entities.User) error {
 	userExist := dm.FindById(id)
 
 	if userExist == nil {
@@ -51,12 +56,20 @@ func (dm *DatabaseMemory) UpdateUser(id entities.ID, user entities.User) error {
 	}
 
 	user.ID = id
+
+	dm.Mutex.Lock()
+	defer dm.Mutex.Unlock()
+
 	dm.Data[id.ToString()] = user
 
 	return nil
 }
 
-func (dm *DatabaseMemory) DeleteUser(id entities.ID) error {
+func (dm *DatabaseMemory) Delete(id entities.ID) error {
+	dm.Mutex.Lock()
+	defer dm.Mutex.Unlock()
+
 	delete(dm.Data, id.ToString())
+
 	return nil
 }
