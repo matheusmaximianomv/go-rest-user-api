@@ -1,4 +1,4 @@
-package database
+package entities
 
 const (
 	UserFieldID        = "id"

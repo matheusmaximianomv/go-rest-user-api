@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"go-rest-user-api/database"
+	"go-rest-user-api/entities"
 	"go-rest-user-api/utils"
 	"log/slog"
 	"net/http"
@@ -62,7 +63,7 @@ func handleGetUser(db database.Database) http.HandlerFunc {
 			return
 		}
 
-		if user := db.FindById(database.ID(idParsed)); user != nil {
+		if user := db.FindById(entities.ID(idParsed)); user != nil {
 			utils.SendJSON(w, utils.Response{Data: user}, http.StatusOK)
 			return
 		}
@@ -73,7 +74,7 @@ func handleGetUser(db database.Database) http.HandlerFunc {
 
 func handlePostUser(db database.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var newUser database.User
+		var newUser entities.User
 		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
 			utils.SendJSON(w, utils.Response{Message: "Please provide FirstName LastName and bio for the user"}, http.StatusBadRequest)
 			slog.Error("Could not convert submitted data to expected structure", "erro", err)
@@ -117,14 +118,14 @@ func handlePutUser(db database.Database) http.HandlerFunc {
 			return
 		}
 
-		uuidUser := database.ID(idParsed)
+		uuidUser := entities.ID(idParsed)
 		if userExists := db.FindById(uuidUser); userExists == nil {
 			slog.Error("The user with this UUID has no record", "uuid", uuidUser)
 			utils.SendJSON(w, utils.Response{Message: "The user with the specified ID does not exist"}, http.StatusNotFound)
 			return
 		}
 
-		var userUpdated database.User
+		var userUpdated entities.User
 		if err := json.NewDecoder(r.Body).Decode(&userUpdated); err != nil {
 			slog.Error("Could not convert submitted data to expected structure", "erro", err)
 			utils.SendJSON(w, utils.Response{Message: "Please provide name and bio for the user"}, http.StatusBadRequest)
@@ -161,7 +162,7 @@ func handleDeleteUser(db database.Database) http.HandlerFunc {
 			return
 		}
 
-		uuidUser := database.ID(idParsed)
+		uuidUser := entities.ID(idParsed)
 		if userExists := db.FindById(uuidUser); userExists == nil {
 			slog.Error("The user with this UUID has no record", "uuid", uuidUser)
 			utils.SendJSON(w, utils.Response{Message: "The user with the specified ID does not exist"}, http.StatusNotFound)

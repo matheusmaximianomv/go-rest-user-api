@@ -3,13 +3,14 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"go-rest-user-api/entities"
 	"os"
 
 	"github.com/google/uuid"
 )
 
 type Storage struct {
-	Users map[string]User `json:"users"`
+	Users map[string]entities.User `json:"users"`
 }
 
 type Database struct {
@@ -76,8 +77,8 @@ func (a *Database) getFile() (*os.File, error) {
 	return file, nil
 }
 
-func (a *Database) FindAll() []User {
-	users := make([]User, 0)
+func (a *Database) FindAll() []entities.User {
+	users := make([]entities.User, 0)
 
 	for _, user := range a.Data.Users {
 		users = append(users, user)
@@ -86,7 +87,7 @@ func (a *Database) FindAll() []User {
 	return users
 }
 
-func (a *Database) FindById(id ID) *User {
+func (a *Database) FindById(id entities.ID) *entities.User {
 	user, ok := a.Data.Users[id.ToString()]
 	if !ok {
 		return nil
@@ -95,8 +96,8 @@ func (a *Database) FindById(id ID) *User {
 	return &user
 }
 
-func (a *Database) Insert(user User) (*ID, error) {
-	id := ID(uuid.New())
+func (a *Database) Insert(user entities.User) (*entities.ID, error) {
+	id := entities.ID(uuid.New())
 	user.ID = id
 
 	a.Data.Users[id.ToString()] = user
@@ -108,7 +109,7 @@ func (a *Database) Insert(user User) (*ID, error) {
 	return &id, nil
 }
 
-func (a *Database) UpdateUser(id ID, user User) error {
+func (a *Database) UpdateUser(id entities.ID, user entities.User) error {
 	userExist := a.FindById(id)
 
 	if userExist == nil {
@@ -125,7 +126,7 @@ func (a *Database) UpdateUser(id ID, user User) error {
 	return nil
 }
 
-func (a *Database) DeleteUser(id ID) error {
+func (a *Database) DeleteUser(id entities.ID) error {
 	delete(a.Data.Users, id.ToString())
 
 	if err := a.updateFile(); err != nil {
