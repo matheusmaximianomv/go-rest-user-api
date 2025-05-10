@@ -19,7 +19,7 @@ type Database struct {
 func (a *Database) startStorage() error {
 	db, err := a.getDataFromFile()
 	if db == nil || err != nil {
-		return fmt.Errorf("não foi possível ler o banco: %w", err)
+		return fmt.Errorf("unable to connect to database: %w", err)
 	}
 
 	a.Data = *db

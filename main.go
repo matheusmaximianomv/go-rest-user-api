@@ -11,11 +11,11 @@ import (
 
 func main() {
 	if err := Init(); err != nil {
-		slog.Error("Não foi possível iniciar o servidor")
+		slog.Error("Unable to start http server", "error", err)
 		os.Exit(1)
 	}
 
-	slog.Info("Servidor iniciado na port 8080")
+	slog.Info("Server start in port 8080")
 }
 
 func Init() error {

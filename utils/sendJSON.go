@@ -7,14 +7,14 @@ import (
 )
 
 type Response struct {
-	Data  any `json:"data,omitempty"`
-	Error any `json:"error,omitempty"`
+	Message string `json:"message,omitempty"`
+	Data    any    `json:"data,omitempty"`
 }
 
 func SendJSON(w http.ResponseWriter, response Response, statusCode int) error {
 	data, err := json.Marshal(response)
 	if err != nil {
-		SendJSON(w, Response{Error: "Does not convert data"}, http.StatusInternalServerError)
+		SendJSON(w, Response{Message: "Does not convert data"}, http.StatusInternalServerError)
 		return nil
 	}
 

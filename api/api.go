@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go-rest-user-api/database"
 	"go-rest-user-api/utils"
 	"log/slog"
@@ -23,7 +22,7 @@ func NewHander(db database.Database) http.Handler {
 	r.Use(middlewareContextType)
 
 	r.Route("/api/users", func(r chi.Router) {
-		r.Get("/", handleGetUser(db))
+		r.Get("/", handleGetUsers(db))
 		r.Get("/{id}", handleGetUser(db))
 		r.Post("/", handlePostUser(db))
 		r.Put("/{id}", handlePutUser(db))
@@ -40,19 +39,26 @@ func middlewareContextType(next http.Handler) http.Handler {
 	})
 }
 
+func handleGetUsers(db database.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		users := db.FindAll()
+		if users == nil {
+			utils.SendJSON(w, utils.Response{Message: "The users information could not be retrieved"}, http.StatusInternalServerError)
+			return
+		}
+
+		utils.SendJSON(w, utils.Response{Data: users}, http.StatusOK)
+	}
+}
+
 func handleGetUser(db database.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 
-		if len(id) == 0 {
-			utils.SendJSON(w, utils.Response{Data: db.FindAll()}, http.StatusOK)
-			return
-		}
-
 		idParsed, err := uuid.Parse(id)
 		if err != nil {
-			slog.Error("UUID inválido", "error", err)
-			utils.SendJSON(w, utils.Response{Error: "UUID inválido"}, http.StatusUnprocessableEntity)
+			slog.Error("The UUID sent is not valid information", "error", err)
+			utils.SendJSON(w, utils.Response{Message: "The users information could not be retrieved"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -61,7 +67,7 @@ func handleGetUser(db database.Database) http.HandlerFunc {
 			return
 		}
 
-		utils.SendJSON(w, utils.Response{Data: new(any)}, http.StatusOK)
+		utils.SendJSON(w, utils.Response{Message: "The user with the specified ID does not exist"}, http.StatusNotFound)
 	}
 }
 
@@ -69,29 +75,29 @@ func handlePostUser(db database.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var newUser database.User
 		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
-			utils.SendJSON(w, utils.Response{Error: "Não foi possível converter dados"}, http.StatusBadRequest)
-			slog.Error("Não foi possível converter dados", "erro", err)
+			utils.SendJSON(w, utils.Response{Message: "Please provide FirstName LastName and bio for the user"}, http.StatusBadRequest)
+			slog.Error("Could not convert submitted data to expected structure", "erro", err)
 			return
 		}
 		defer r.Body.Close()
 
 		invalidFields := newUser.HasAnyFieldInvalid()
 		if len(invalidFields) != 0 {
-			utils.SendJSON(w, utils.Response{Error: fmt.Sprintf("Campo(s) inválido(s): %v", invalidFields)}, http.StatusUnprocessableEntity)
-			slog.Error("Campo inválido", slog.Any("campos", invalidFields))
+			utils.SendJSON(w, utils.Response{Message: "Please provide FirstName LastName and bio for the user"}, http.StatusBadRequest)
+			slog.Error("Some field sent is incompatible with the specifications", "fields", invalidFields)
 			return
 		}
 
 		uuidUser, err := db.Insert(newUser)
 		if uuidUser == nil {
-			utils.SendJSON(w, utils.Response{Error: "ID não identificado"}, http.StatusInternalServerError)
-			slog.Error("Usuário não criado")
+			utils.SendJSON(w, utils.Response{Message: "There was an error while saving the user to the database"}, http.StatusInternalServerError)
+			slog.Error("Unable to generate an ID for the new user")
 			return
 		}
 
 		if err != nil {
-			utils.SendJSON(w, utils.Response{Error: "Usuário não criado"}, http.StatusInternalServerError)
-			slog.Error("Usuário não criado", slog.Any("error", err))
+			utils.SendJSON(w, utils.Response{Message: "There was an error while saving the user to the database"}, http.StatusInternalServerError)
+			slog.Error("Unable to create a new user due to a database error", "error", err)
 			return
 		}
 
@@ -106,37 +112,37 @@ func handlePutUser(db database.Database) http.HandlerFunc {
 
 		idParsed, err := uuid.Parse(id)
 		if err != nil {
-			slog.Error("UUID inválido", "error", err)
-			utils.SendJSON(w, utils.Response{Error: "UUID inválido"}, http.StatusUnprocessableEntity)
+			slog.Error("The UUID sent is not valid information", "error", err)
+			utils.SendJSON(w, utils.Response{Message: "The users information could not be retrieved"}, http.StatusNotFound)
 			return
 		}
 
 		uuidUser := database.ID(idParsed)
 		if userExists := db.FindById(uuidUser); userExists == nil {
-			slog.Error("Usuário não existe", "uuid", uuidUser)
-			utils.SendJSON(w, utils.Response{Error: "Usuário não existe"}, http.StatusUnprocessableEntity)
+			slog.Error("The user with this UUID has no record", "uuid", uuidUser)
+			utils.SendJSON(w, utils.Response{Message: "The user with the specified ID does not exist"}, http.StatusNotFound)
 			return
 		}
 
 		var userUpdated database.User
 		if err := json.NewDecoder(r.Body).Decode(&userUpdated); err != nil {
-			utils.SendJSON(w, utils.Response{Error: "Não foi possível converter dados"}, http.StatusBadRequest)
-			slog.Error("Não foi possível converter dados", "erro", err)
+			slog.Error("Could not convert submitted data to expected structure", "erro", err)
+			utils.SendJSON(w, utils.Response{Message: "Please provide name and bio for the user"}, http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
 
 		invalidFields := userUpdated.HasAnyFieldInvalid()
 		if len(invalidFields) != 0 {
-			utils.SendJSON(w, utils.Response{Error: fmt.Sprintf("Campo(s) inválido(s): %v", invalidFields)}, http.StatusUnprocessableEntity)
-			slog.Error("Campo inválido", slog.Any("campos", invalidFields))
+			slog.Error("Some field sent is incompatible with the specifications", "fields", invalidFields)
+			utils.SendJSON(w, utils.Response{Message: "Please provide name and bio for the user"}, http.StatusBadRequest)
 			return
 		}
 
 		userUpdated.ID = uuidUser
 		if err := db.UpdateUser(uuidUser, userUpdated); err != nil {
-			utils.SendJSON(w, utils.Response{Error: "Usuário não atualizado"}, http.StatusInternalServerError)
-			slog.Error("Usuário não atualizado", slog.Any("error", err))
+			utils.SendJSON(w, utils.Response{Message: "The user information could not be modified"}, http.StatusInternalServerError)
+			slog.Error("User could not be updated", "error", err)
 			return
 		}
 
@@ -150,21 +156,21 @@ func handleDeleteUser(db database.Database) http.HandlerFunc {
 
 		idParsed, err := uuid.Parse(id)
 		if err != nil {
-			slog.Error("UUID inválido", "error", err)
-			utils.SendJSON(w, utils.Response{Error: "UUID inválido"}, http.StatusUnprocessableEntity)
+			slog.Error("The UUID sent is not well formatted", "error", err)
+			utils.SendJSON(w, utils.Response{Message: "The user with the specified ID does not exist"}, http.StatusNotFound)
 			return
 		}
 
 		uuidUser := database.ID(idParsed)
 		if userExists := db.FindById(uuidUser); userExists == nil {
-			slog.Error("Usuário não existe", "uuid", uuidUser)
-			utils.SendJSON(w, utils.Response{Error: "Usuário não existe"}, http.StatusUnprocessableEntity)
+			slog.Error("The user with this UUID has no record", "uuid", uuidUser)
+			utils.SendJSON(w, utils.Response{Message: "The user with the specified ID does not exist"}, http.StatusNotFound)
 			return
 		}
 
 		if err := db.DeleteUser(uuidUser); err != nil {
-			utils.SendJSON(w, utils.Response{Error: "Usuário não removido"}, http.StatusInternalServerError)
-			slog.Error("Usuário não removido", slog.Any("error", err))
+			utils.SendJSON(w, utils.Response{Message: "The user could not be removed"}, http.StatusInternalServerError)
+			slog.Error("User could not be removed", "error", err)
 			return
 		}
 
