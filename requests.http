@@ -5,7 +5,7 @@ GET http://localhost:8080/api/users
 Accept: application/json
 
 ### Listar usuário por id
-GET http://localhost:8080/api/users/6110aa4d-020c-4f37-99ce-6a9992cdee07
+GET http://localhost:8080/api/users/9b184907-e268-45b5-93a1-d6db619b8f5d
 Accept: application/json
 
 ### Listar nenhum usuário
@@ -61,7 +61,7 @@ Content-Type: application/json
 ### PUT
 
 ## Atualizar usuário (Campos com a quantidade no limite permitida)
-PUT http://localhost:8080/api/users/6110aa4d-020c-4f37-99ce-6a9992cdee07
+PUT http://localhost:8080/api/users/9b184907-e268-45b5-93a1-d6db619b8f5d
 Content-Type: application/json
 
 {
@@ -74,5 +74,5 @@ Content-Type: application/json
 
 ### Remover usuário
 
-DELETE http://localhost:8080/api/users/6110aa4d-020c-4f37-99ce-6a9992cdee07
+DELETE http://localhost:8080/api/users/9b184907-e268-45b5-93a1-d6db619b8f5d
 Content-Type: application/json

@@ -141,7 +141,7 @@ func handlePutUser(db database.Database) http.HandlerFunc {
 		}
 
 		userUpdated.ID = uuidUser
-		if err := db.UpdateUser(uuidUser, userUpdated); err != nil {
+		if err := db.Update(uuidUser, userUpdated); err != nil {
 			utils.SendJSON(w, utils.Response{Message: "The user information could not be modified"}, http.StatusInternalServerError)
 			slog.Error("User could not be updated", "error", err)
 			return
@@ -169,7 +169,7 @@ func handleDeleteUser(db database.Database) http.HandlerFunc {
 			return
 		}
 
-		if err := db.DeleteUser(uuidUser); err != nil {
+		if err := db.Delete(uuidUser); err != nil {
 			utils.SendJSON(w, utils.Response{Message: "The user could not be removed"}, http.StatusInternalServerError)
 			slog.Error("User could not be removed", "error", err)
 			return
