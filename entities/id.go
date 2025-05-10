@@ -8,8 +8,8 @@ import (
 
 type ID uuid.UUID
 
-func (i ID) ToString() string {
-	return uuid.UUID(i).String()
+func (id ID) ToString() string {
+	return uuid.UUID(id).String()
 }
 
 func (id ID) MarshalJSON() ([]byte, error) {

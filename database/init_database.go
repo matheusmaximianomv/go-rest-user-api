@@ -10,7 +10,7 @@ func InitDatabase(db Database) (Database, error) {
 	}
 
 	if err := db.StartStorage(); err != nil {
-		return db, err
+		return nil, err
 	}
 
 	return db, nil
