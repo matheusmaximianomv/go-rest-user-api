@@ -4,6 +4,8 @@ import (
 	"go-rest-user-api/api"
 	"go-rest-user-api/database"
 	databaseFile "go-rest-user-api/database/file"
+
+	// databaseMemory "go-rest-user-api/database/memory"
 	"log/slog"
 	"net/http"
 	"os"
@@ -22,6 +24,7 @@ func main() {
 func Init() error {
 
 	dbFile := databaseFile.DatabaseFile{}
+	// dbMemory := databaseMemory.DatabaseMemory{}
 	db, err := database.InitDatabase(&dbFile)
 	if err != nil {
 		return err
