@@ -3,6 +3,7 @@ package main
 import (
 	"go-rest-user-api/api"
 	"go-rest-user-api/database"
+	databaseFile "go-rest-user-api/database/file"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,7 +20,9 @@ func main() {
 }
 
 func Init() error {
-	db, err := database.InitDatabase()
+
+	dbFile := databaseFile.DatabaseFile{}
+	db, err := database.InitDatabase(&dbFile)
 	if err != nil {
 		return err
 	}

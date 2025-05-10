@@ -1,0 +1,16 @@
+{
+  "users": {
+    "92105653-5da2-4b70-a515-99552d15bbb6": {
+      "id": "92105653-5da2-4b70-a515-99552d15bbb6",
+      "first_name": "Administrador Geral.",
+      "last_name": "Administrador Geral.",
+      "biography": "O usuário administrador possui permissões avançadas que superam as de um usuário comum. Ele pode criar, editar e excluir contas, definir permissões, acessar todos os módulos, inclusive os sensíveis, e visualizar logs e relatórios restritos. Também pode configurar integrações, realizar backups, restaurar dados e aprovar ações críticas. Suas atividades são auditáveis, garantindo controle e segurança sobre o funcionamento do sistema e de outros mod"
+    },
+    "9b184907-e268-45b5-93a1-d6db619b8f5d": {
+      "id": "9b184907-e268-45b5-93a1-d6db619b8f5d",
+      "first_name": "Administrator",
+      "last_name": "Administrator",
+      "biography": "Usuário com permissões completas para gerenciar o sistema, incluindo criação, edição e exclusão de recursos, além de gerenciar outros usuários e configurações."
+    }
+  }
+}

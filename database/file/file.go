@@ -1,4 +1,4 @@
-package database
+package database_file
 
 import (
 	"encoding/json"
@@ -13,11 +13,11 @@ type Storage struct {
 	Users map[string]entities.User `json:"users"`
 }
 
-type Database struct {
+type DatabaseFile struct {
 	Data Storage
 }
 
-func (a *Database) startStorage() error {
+func (a *DatabaseFile) StartStorage() error {
 	db, err := a.getDataFromFile()
 	if db == nil || err != nil {
 		return fmt.Errorf("unable to connect to database: %w", err)
@@ -28,7 +28,7 @@ func (a *Database) startStorage() error {
 	return nil
 }
 
-func (a *Database) getDataFromFile() (*Storage, error) {
+func (a *DatabaseFile) getDataFromFile() (*Storage, error) {
 	file, err := a.getFile()
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (a *Database) getDataFromFile() (*Storage, error) {
 	return db, nil
 }
 
-func (a *Database) updateFile() error {
+func (a *DatabaseFile) updateFile() error {
 	file, err := a.getFile()
 	if err != nil {
 		return err
@@ -63,13 +63,13 @@ func (a *Database) updateFile() error {
 	return nil
 }
 
-func (a *Database) getFile() (*os.File, error) {
+func (a *DatabaseFile) getFile() (*os.File, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
 
-	file, err := os.OpenFile(cwd+"/database/storage.json", os.O_RDWR, 0644)
+	file, err := os.OpenFile(cwd+"/database/file/storage.json", os.O_RDWR, 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (a *Database) getFile() (*os.File, error) {
 	return file, nil
 }
 
-func (a *Database) FindAll() []entities.User {
+func (a *DatabaseFile) FindAll() []entities.User {
 	users := make([]entities.User, 0)
 
 	for _, user := range a.Data.Users {
@@ -87,7 +87,7 @@ func (a *Database) FindAll() []entities.User {
 	return users
 }
 
-func (a *Database) FindById(id entities.ID) *entities.User {
+func (a *DatabaseFile) FindById(id entities.ID) *entities.User {
 	user, ok := a.Data.Users[id.ToString()]
 	if !ok {
 		return nil
@@ -96,7 +96,7 @@ func (a *Database) FindById(id entities.ID) *entities.User {
 	return &user
 }
 
-func (a *Database) Insert(user entities.User) (*entities.ID, error) {
+func (a *DatabaseFile) Insert(user entities.User) (*entities.ID, error) {
 	id := entities.ID(uuid.New())
 	user.ID = id
 
@@ -109,7 +109,7 @@ func (a *Database) Insert(user entities.User) (*entities.ID, error) {
 	return &id, nil
 }
 
-func (a *Database) UpdateUser(id entities.ID, user entities.User) error {
+func (a *DatabaseFile) UpdateUser(id entities.ID, user entities.User) error {
 	userExist := a.FindById(id)
 
 	if userExist == nil {
@@ -126,7 +126,7 @@ func (a *Database) UpdateUser(id entities.ID, user entities.User) error {
 	return nil
 }
 
-func (a *Database) DeleteUser(id entities.ID) error {
+func (a *DatabaseFile) DeleteUser(id entities.ID) error {
 	delete(a.Data.Users, id.ToString())
 
 	if err := a.updateFile(); err != nil {
@@ -134,14 +134,4 @@ func (a *Database) DeleteUser(id entities.ID) error {
 	}
 
 	return nil
-}
-
-func InitDatabase() (Database, error) {
-	db := Database{}
-
-	if err := db.startStorage(); err != nil {
-		return db, err
-	}
-
-	return db, nil
 }
